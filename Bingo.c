@@ -1,4 +1,4 @@
-// Vladimir Osvaldo Curiel Ovalles 1014-1415. Profe la para este código, de museo.
+// Vladimir Osvaldo Curiel Ovalles 1014-1415.
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -68,24 +68,31 @@ void showWinners(int[], int);
 int main()
 {
    GAME *players;
-   srand(time(NULL));
-   int quanPlayers;
-   int bolo, bolos[MAXBOLO], key, full = 0, win = 0, seg;
+   int quanPlayers, key, seg, bolo, bingo = 0, bingoFull = 0, bolos[MAXBOLO];
    bolo = getBolo(bolos);
+
+   srand(time(NULL));
+   _setcursortype(0);
 
    printf("Cantidad de jugadores: ");
    scanf("%d", &quanPlayers);
-   int fullPlayers[quanPlayers];
-   int winners[quanPlayers];
+   players = (GAME *)malloc(quanPlayers * sizeof(GAME));
+   int winners[quanPlayers], activePlayers[quanPlayers];
 
    // Bucle para inicializar las victorias en 0.
    for (int pos = 0; pos < quanPlayers; pos++)
-      winners[pos] = 0;
-   players = (GAME *)malloc(quanPlayers * sizeof(GAME));
+      winners[pos] = FALSE;
 
    do
    {
-      seg = time(NULL);
+      bingo = 0, bingoFull = 0;
+      // Bucle para decidir los jugadores a evaluar. Inicia evaluándolos a todos, más adelante cambiara individualmente.
+      for (int pos = 0; pos < quanPlayers; pos++)
+         activePlayers[pos] = TRUE;
+      // Asignación de bolos libres
+      for (int pos = 0; pos < MAXBOLO; pos++)
+         bolos[pos] = FREE;
+
       // Bucle para preguntar la cantidad de cartones por jugador.
       for (int pos = 0; pos < quanPlayers; pos++)
       {
@@ -98,91 +105,18 @@ int main()
          } while ((players + pos)->quanBoards > MAXBOARDS);
          (players + pos)->boards = (BOARD *)malloc((players + pos)->quanBoards * sizeof(BOARD)); // Dimensionamos todo el espacio para cada jugador.
       }
-      // Bucle para decidir los jugadores a evaluar. Inicia evaluándolos a todos, más adelante cambiara individualmente.
-      for (int pos = 0; pos < quanPlayers; pos++)
-         fullPlayers[pos] = TRUE;
+      printf("\nControles:\n");
+      printf("\n[ENTER] para sacar un bolo.\n");
+      printf("[ESC]   para ver las victorias de los jugadores.\n\n");
+      system("pause");
+      system("cls");
       fillBoards(players, quanPlayers);
-      system("cls");
-      showBoards(players, quanPlayers, fullPlayers);
-      // Asignación de bolos libres
-      for (int pos = 0; pos < MAXBOLO; pos++)
-         bolos[pos] = FREE;
-      win = 0;
-      full = 0;
+      seg = time(NULL);
       do
-      {
-         showTimeXY(time(NULL) - seg, XPOS, YPOS - 3);
-         _setcursortype(0);
-         do
-         {
-            fflush(stdin);
-            key = tolower(getch());
-         } while (key != ENTER && key != ESC);
-         if (key == ESC)
-         {
-            system("cls");
-            showWinners(winners, quanPlayers);
-            system("pause");
-            system("cls");
-         }
-         if (key == ENTER)
-         {
-            bolo = getBolo(bolos);
-            showBolo(bolo);
-            for (int pos = 0; pos < quanPlayers; pos++)
-               verifPlay((players + pos), bolo);
-            showBoards(players, quanPlayers, fullPlayers);
-            for (int pos = 0; pos < quanPlayers; pos++)
-            {
-               if (verifWin((players + pos), pos))
-               {
-                  win = 1;
-                  winners[pos]++;
-                  // break;
-               }
-            }
-         }
-      } while (!win);
-      win = 0;
-      gotoxy(XPOS, YPOS);
-      printf("%cDesean jugar a carton completo%c (s)%c %c (n)o", 168, 63, 161, 162);
-      do
-      {
-         fflush(stdin);
-         key = tolower(getch());
-      } while (key != 's' && key != 'n');
-      if (key == 's')
-      {
-         gotoxy(XPOS, YPOS);
-         printf("                                                                    ");
-         for (int pos = 0; pos < quanPlayers; pos++)
-         {
-            gotoxy(XPOS, YPOS);
-            printf("%cJugador #%d%c (s)%c %c (n)o", 168, pos + 1, 63, 161, 162);
-            do
-            {
-               fflush(stdin);
-               key = tolower(getch());
-            } while (key != 's' && key != 'n');
-            // Se modificara el arreglo que se lleno al principio para solo imprimir los jugadores que van a jugar a carton completo.
-            if (key == 's')
-            {
-               fullPlayers[pos] = 1;
-               full = 1;
-            }
-            else if (key == 'n')
-               fullPlayers[pos] = 0;
-         }
-      }
-      gotoxy(XPOS, YPOS);
-      system("cls");
-      // Version de las cosas que debe hacer pero con los jugadores que dijeron que sí.
-      if (full)
       {
          do
          {
             showTimeXY(time(NULL) - seg, XPOS, YPOS - 3);
-            _setcursortype(0);
             do
             {
                fflush(stdin);
@@ -200,21 +134,65 @@ int main()
                bolo = getBolo(bolos);
                showBolo(bolo);
                for (int pos = 0; pos < quanPlayers; pos++)
-                  if (fullPlayers[pos])
-                     verifPlay((players + pos), bolo);
-               showBoards(players, quanPlayers, fullPlayers);
+                  verifPlay((players + pos), bolo);
+
+               showBoards(players, quanPlayers, activePlayers);
                for (int pos = 0; pos < quanPlayers; pos++)
                {
-                  if (verifFullWin((players + pos), pos))
+                  if (!bingo)
                   {
-                     win = 1;
-                     winners[pos]++;
-                     // break;
+                     if (verifWin((players + pos), pos))
+                     {
+                        winners[pos]++;
+                        bingo = TRUE;
+                        gotoxy(XPOS, YPOS);
+                        printf("%cDesean jugar a carton completo%c (s)%c %c (n)o", 168, 63, 161, 162);
+                        do
+                        {
+                           fflush(stdin);
+                           key = tolower(getch());
+                        } while (key != 's' && key != 'n');
+                        if (key == 'n')
+                        {
+                           gotoxy(XPOS, YPOS);
+                           printf("                                                                    ");
+                           bingoFull = TRUE;
+                        }
+                        if (key == 's')
+                        {
+                           gotoxy(XPOS, YPOS);
+                           printf("                                                                    ");
+                           for (int pos = 0; pos < quanPlayers; pos++)
+                           {
+                              gotoxy(XPOS, YPOS);
+                              printf("%cJugador #%d%c (s)%c %c (n)o", 168, pos + 1, 63, 161, 162);
+                              do
+                              {
+                                 fflush(stdin);
+                                 key = tolower(getch());
+                              } while (key != 's' && key != 'n');
+                              // Se modificara el arreglo que se lleno al principio para solo imprimir los jugadores que van a jugar a carton completo.
+                              if (key == 's')
+                                 activePlayers[pos] = 1;
+                              else if (key == 'n')
+                                 activePlayers[pos] = 0;
+                           }
+                        }
+                        system("cls");
+                     }
+                  }
+                  else if (bingo)
+                  {
+                     if (verifFullWin((players + pos), pos))
+                     {
+                        bingoFull = TRUE;
+                        winners[pos]++;
+                     }
                   }
                }
             }
-         } while (!win);
-      }
+         } while (!bingo);
+      } while (!bingoFull);
       gotoxy(XPOS, YPOS);
       printf("%cDesea jugar otra vez%c (s)%c %c (n)o", 168, 63, 161, 162);
       do
@@ -224,16 +202,14 @@ int main()
       } while (key != 's' && key != 'n');
       if (key == 's')
          for (int pos = 0; pos < quanPlayers; pos++)
-            free((players + pos)->boards);
-      gotoxy(XPOS, YPOS);
-      printf("                                                  ");
+            free((players + pos)->boards); // Limpia la memoria de los cartones.
       system("cls");
    } while (key != 'n');
-   free(players);
    gotoxy(30, 10);
    setColor(YELLOW, RED);
    printf("%cGracias por jugar al bingo, vuelva pronto%c", 173, 33);
    sleep(2);
+   free(players);
    return 0;
 }
 /*
@@ -289,12 +265,12 @@ void fillBoards(GAME *players, int quanPlayers)
    Objetivo:   Llenar los tableros con valores aleatorios.
    Retorno:    Ninguno.
 */
-void showBoards(GAME *players, int quanPlayers, int full[])
+void showBoards(GAME *players, int quanPlayers, int activePlayers[])
 {
    int xpos, ypos = YP, def;
    for (int pos = 0; pos < quanPlayers; pos++)
    {
-      if (full[pos])
+      if (activePlayers[pos])
       {
          for (int ind = 0; ind < (players + pos)->quanBoards; ind++)
          {
@@ -321,7 +297,6 @@ void showBoards(GAME *players, int quanPlayers, int full[])
 
                xpos += DIST; // Movimiento en X deseado, controlado por DIST
                gotoxy(xpos, ypos);
-
                if ((players + pos)->boards[ind].I[arg].status != USED)
                   setColor(BLUE, LIGHTGRAY);
                else if ((players + pos)->boards[ind].I[arg].status == USED)
@@ -330,19 +305,16 @@ void showBoards(GAME *players, int quanPlayers, int full[])
 
                xpos += DIST;
                gotoxy(xpos, ypos);
-
                if ((players + pos)->boards[ind].N[arg].status != USED)
                   setColor(BLUE, LIGHTGRAY);
                else if ((players + pos)->boards[ind].N[arg].status == USED)
                   setColor(BLUE, YELLOW);
                if ((players + pos)->boards[ind].N[arg].value == INITIAL)
                   setColor(RED, RED);
-
                printf("%3d", (players + pos)->boards[ind].N[arg].value);
 
                xpos += DIST;
                gotoxy(xpos, ypos);
-
                if ((players + pos)->boards[ind].G[arg].status != USED)
                   setColor(BLUE, LIGHTGRAY);
                else if ((players + pos)->boards[ind].G[arg].status == USED)
@@ -351,13 +323,11 @@ void showBoards(GAME *players, int quanPlayers, int full[])
 
                xpos += DIST;
                gotoxy(xpos, ypos);
-
                if ((players + pos)->boards[ind].O[arg].status != USED)
                   setColor(BLUE, LIGHTGRAY);
                else if ((players + pos)->boards[ind].O[arg].status == USED)
                   setColor(BLUE, YELLOW);
                printf("%3d", (players + pos)->boards[ind].O[arg].value);
-
                // Para cuadrar cada tabla donde va
                xpos = def;
                ypos++;
@@ -394,6 +364,242 @@ int verifNumber(GAME *players, int value, int board)
          return 0;
    }
    return 1;
+}
+/*
+   Función:    verifPlay
+   Argumentos: GAME *, estructura a evaluar.
+               int bolo, bolo(numero) a verificar en los arreglos.
+   Objetivo:   Verificar en los arreglos del jugador mandado.
+   Retorno:    Ninguno.
+*/
+void verifPlay(GAME *players, int bolo)
+{
+   for (int ind = 0; ind < players->quanBoards; ind++)
+      for (int arg = 0; arg < MAXCOL; arg++)
+      {
+         if ((players)->boards[ind].B[arg].value == bolo)
+            (players)->boards[ind].B[arg].status = USED;
+         if ((players)->boards[ind].I[arg].value == bolo)
+            (players)->boards[ind].I[arg].status = USED;
+         if ((players)->boards[ind].N[arg].value == bolo)
+            (players)->boards[ind].N[arg].status = USED;
+         if ((players)->boards[ind].G[arg].value == bolo)
+            (players)->boards[ind].G[arg].status = USED;
+         if ((players)->boards[ind].O[arg].value == bolo)
+            (players)->boards[ind].O[arg].status = USED;
+      }
+   return;
+}
+/*
+   Función:    verifWin
+   Argumentos: GAME *, estructura a evaluar.
+               int numbPlayer, jugador especifico a evaluar.
+   Objetivo:   Verificar si el jugador ganó.
+   Retorno:    int, True or False.
+*/
+int verifWin(GAME *players, int numbPlayer)
+{
+
+   if (verifWinHor(players, numbPlayer))
+      return 1;
+   if (verifWinVer(players, numbPlayer))
+      return 1;
+   if (verifWinDiag(players, numbPlayer))
+      return 1;
+
+   return 0;
+}
+/*
+   Función:    verifWin
+   Argumentos: GAME *, estructura a evaluar.
+               int numbPlayer, jugador especifico a evaluar.
+   Objetivo:   Verificar si el jugador ganó en vertical.
+   Retorno:    int, True or False.
+*/
+int verifWinVer(GAME *players, int numbPlayer)
+{
+   int win = 0;
+   for (int ind = 0; ind < players->quanBoards; ind++)
+   {
+      for (int arg = 0; arg < MAXCOL; arg++)
+      {
+         if (players->boards[ind].B[arg].status == USED)
+            win++;
+         else
+            win = 0;
+         if (win == WIN)
+         {
+            winner(players, numbPlayer, ind);
+            return 1;
+         }
+      }
+      win = 0;
+      for (int arg = 0; arg < MAXCOL; arg++)
+      {
+         if (players->boards[ind].I[arg].status == USED)
+            win++;
+         else
+            win = 0;
+         if (win == WIN)
+         {
+            winner(players, numbPlayer, ind);
+            return 1;
+         }
+      }
+      win = 0;
+      for (int arg = 0; arg < MAXCOL; arg++)
+      {
+         if (players->boards[ind].N[arg].status == USED)
+            win++;
+         else
+            win = 0;
+         if (win == WIN)
+         {
+            winner(players, numbPlayer, ind);
+            return 1;
+         }
+      }
+      win = 0;
+      for (int arg = 0; arg < MAXCOL; arg++)
+      {
+         if (players->boards[ind].G[arg].status == USED)
+            win++;
+         else
+            win = 0;
+         if (win == WIN)
+         {
+            winner(players, numbPlayer, ind);
+            return 1;
+         }
+      }
+      win = 0;
+      for (int arg = 0; arg < MAXCOL; arg++)
+      {
+         if (players->boards[ind].O[arg].status == USED)
+            win++;
+         else
+            win = 0;
+         if (win == WIN)
+         {
+            winner(players, numbPlayer, ind);
+            return 1;
+         }
+      }
+      win = 0;
+   }
+   return 0;
+}
+int verifWinHor(GAME *players, int numbPlayer)
+{
+   for (int ind = 0; ind < players->quanBoards; ind++)
+      for (int arg = 0; arg < MAXCOL; arg++)
+         if (players->boards[ind].B[arg].status == USED &&
+             (players->boards[ind].I[arg].status == USED && players->boards[ind].N[arg].status == USED && players->boards[ind].G[arg].status == USED && players->boards[ind].O[arg].status == USED))
+         {
+            winner(players, numbPlayer, ind);
+            return 1;
+         }
+   return 0;
+}
+/*
+   Función:    verifWin
+   Argumentos: GAME *, estructura a evaluar.
+               int numbPlayer, jugador especifico a evaluar.
+   Objetivo:   Verificar si el jugador ganó en diagonal.
+   Retorno:    int, True or False.
+*/
+int verifWinDiag(GAME *players, int numbPlayer)
+{
+   // Principal
+   for (int ind = 0; ind < players->quanBoards; ind++)
+      if (players->boards[ind].B[0].status == USED)
+         if (players->boards[ind].I[1].status == USED)
+            if (players->boards[ind].N[2].status == USED)
+               if (players->boards[ind].G[3].status == USED)
+                  if (players->boards[ind].O[4].status == USED)
+                  {
+                     winner(players, numbPlayer, ind);
+                     return 1;
+                  }
+   // Secundaria.
+   for (int ind = 0; ind < players->quanBoards; ind++)
+      if (players->boards[ind].B[4].status == USED)
+         if (players->boards[ind].I[3].status == USED)
+            if (players->boards[ind].N[2].status == USED)
+               if (players->boards[ind].G[1].status == USED)
+                  if (players->boards[ind].O[0].status == USED)
+                  {
+                     winner(players, numbPlayer, ind);
+                     return 1;
+                  }
+   return 0;
+}
+/*
+   Función:    verifWin
+   Argumentos: GAME *, estructura a evaluar.
+               int numbPlayer, jugador especifico a evaluar.
+   Objetivo:   Verificar si el jugador ganó en a carton completo.
+   Retorno:    int, True or False.
+*/
+int verifFullWin(GAME *players, int numbPlayer)
+{
+   int win = 0, arg = 0;
+
+   for (int ind = 0; ind < players->quanBoards; ind++)
+      if (players->boards[ind].B[arg].status == USED && players->boards[ind].B[arg + 1].status == USED && players->boards[ind].B[arg + 2].status == USED &&
+          players->boards[ind].B[arg + 3].status == USED && players->boards[ind].B[arg + 4].status == USED)
+
+         if (players->boards[ind].I[arg].status == USED && players->boards[ind].I[arg + 1].status == USED && players->boards[ind].I[arg + 2].status == USED &&
+             players->boards[ind].I[arg + 3].status == USED && players->boards[ind].I[arg + 4].status == USED)
+
+            if (players->boards[ind].N[arg].status == USED && players->boards[ind].N[arg + 1].status == USED && players->boards[ind].N[arg + 2].status == USED &&
+                players->boards[ind].N[arg + 3].status == USED && players->boards[ind].N[arg + 4].status == USED)
+
+               if (players->boards[ind].G[arg].status == USED && players->boards[ind].G[arg + 1].status == USED && players->boards[ind].G[arg + 2].status == USED &&
+                   players->boards[ind].G[arg + 3].status == USED && players->boards[ind].G[arg + 4].status == USED)
+
+                  if (players->boards[ind].O[arg].status == USED && players->boards[ind].O[arg + 1].status == USED && players->boards[ind].O[arg + 2].status == USED &&
+                      players->boards[ind].O[arg + 3].status == USED && players->boards[ind].O[arg + 4].status == USED)
+                  {
+                     winner(players, numbPlayer, ind);
+                     return 1;
+                  }
+   return 0;
+}
+/*
+   Función:    winner
+   Argumentos: GAME *, estructura a evaluar.
+               int numbPlayer, jugador especifico a evaluar.
+               int board, carton  especifico del jugador.
+   Objetivo:   Imprimir en pantalla el jugador que ganó.
+   Retorno:    Ninguno.
+*/
+void winner(GAME *players, int numbPlayer, int board)
+{
+   setColor(RED, WHITE);
+   gotoxy(XPOS, YPOS - 1);
+   printf("Ha ganado Jugador #%d en carton #%d (%d-%d).\n", numbPlayer + 1, board + 1, numbPlayer + 1, board + 1);
+   colorDefault();
+   gotoxy(XPOS, YPOS);
+   system("pause");
+   gotoxy(XPOS, YPOS);
+   printf("                                              ");
+   gotoxy(XPOS, XPOS);
+   printf("                                              ");
+   return;
+}
+/*
+   Función:    showWinners
+   Argumentos: int winners[], Arreglos que guarda cuantas veces ha ganado un jugador.
+               int quanPlayers, cantidad de jugadores.
+   Objetivo:   Imprimir en pantalla las estadísticas de los jugadores.
+   Retorno:    Ninguno.
+*/
+void showWinners(int winners[], int quanPlayers)
+{
+   for (int pos = 0; pos < quanPlayers; pos++)
+      printf("El jugador %d, lleva %d victoria(s)\n", pos + 1, winners[pos]);
+   return;
 }
 /*
    Función:    randRange
@@ -490,377 +696,8 @@ void showTimeXY(int seg, int posX, int posY)
    hour = (min / 60);
    seg -= (hour * 3600);
    gotoxy(posX, posY);
-   printf("%02d:%02d:%02d", hour, min, seg);
-   return;
-}
-/*
-   Función:    verifPlay
-   Argumentos: GAME *, estructura a evaluar.
-               int bolo, bolo(numero) a verificar en los arreglos.
-   Objetivo:   Verificar en los arreglos del jugador mandado.
-   Retorno:    Ninguno.
-*/
-void verifPlay(GAME *players, int bolo)
-{
-   for (int ind = 0; ind < players->quanBoards; ind++)
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if ((players)->boards[ind].B[arg].value == bolo)
-            (players)->boards[ind].B[arg].status = USED;
-         if ((players)->boards[ind].I[arg].value == bolo)
-            (players)->boards[ind].I[arg].status = USED;
-         if ((players)->boards[ind].N[arg].value == bolo)
-            (players)->boards[ind].N[arg].status = USED;
-         if ((players)->boards[ind].G[arg].value == bolo)
-            (players)->boards[ind].G[arg].status = USED;
-         if ((players)->boards[ind].O[arg].value == bolo)
-            (players)->boards[ind].O[arg].status = USED;
-      }
-   return;
-}
-/*
-   Función:    verifWin
-   Argumentos: GAME *, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-   Objetivo:   Verificar si el jugador ganó.
-   Retorno:    int, True or False.
-*/
-int verifWin(GAME *players, int numbPlayer)
-{
-
-   if (verifWinHor(players, numbPlayer))
-      return 1;
-   if (verifWinVer(players, numbPlayer))
-      return 1;
-   if (verifWinDiag(players, numbPlayer))
-      return 1;
-
-   return 0;
-}
-/*
-   Función:    verifWin
-   Argumentos: GAME *, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-   Objetivo:   Verificar si el jugador ganó en horizontal.
-   Retorno:    int, True or False.
-*/
-int verifWinHor(GAME *players, int numbPlayer)
-{
-   int win = 0;
-
-   for (int ind = 0; ind < players->quanBoards; ind++)
-   {
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].B[arg].status == USED)
-         {
-            win++;
-            if (players->boards[ind].I[arg].status == USED)
-            {
-               win++;
-               if (players->boards[ind].N[arg].status == USED)
-               {
-                  win++;
-                  if (players->boards[ind].G[arg].status == USED)
-                  {
-                     win++;
-                     if (players->boards[ind].O[arg].status == USED)
-                     {
-                        win++;
-                        if (win == WIN)
-                        {
-                           winner(players, numbPlayer, ind);
-                           return 1;
-                        }
-                     }
-                     else
-                        win = 0;
-                  }
-                  else
-                     win = 0;
-               }
-               else
-                  win = 0;
-            }
-            else
-               win = 0;
-         }
-         else
-            win = 0;
-      }
-      win = 0;
-   }
-
-   return 0;
-}
-/*
-   Función:    verifWin
-   Argumentos: GAME *, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-   Objetivo:   Verificar si el jugador ganó en vertical.
-   Retorno:    int, True or False.
-*/
-int verifWinVer(GAME *players, int numbPlayer)
-{
-   int win = 0;
-
-   for (int ind = 0; ind < players->quanBoards; ind++)
-   {
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].B[arg].status == USED)
-            win++;
-         else
-            win = 0;
-         if (win == WIN)
-         {
-            winner(players, numbPlayer, ind);
-            return 1;
-         }
-      }
-      win = 0;
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].I[arg].status == USED)
-            win++;
-         else
-            win = 0;
-         if (win == WIN)
-         {
-            winner(players, numbPlayer, ind);
-            return 1;
-         }
-      }
-      win = 0;
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].N[arg].status == USED)
-            win++;
-         else
-            win = 0;
-         if (win == WIN)
-         {
-            winner(players, numbPlayer, ind);
-            return 1;
-         }
-      }
-      win = 0;
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].G[arg].status == USED)
-            win++;
-         else
-            win = 0;
-         if (win == WIN)
-         {
-            winner(players, numbPlayer, ind);
-            return 1;
-         }
-      }
-      win = 0;
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].O[arg].status == USED)
-            win++;
-         else
-            win = 0;
-         if (win == WIN)
-         {
-            winner(players, numbPlayer, ind);
-            return 1;
-         }
-      }
-      win = 0;
-   }
-   return 0;
-}
-/*
-   Función:    verifWin
-   Argumentos: GAME *, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-   Objetivo:   Verificar si el jugador ganó en diagonal.
-   Retorno:    int, True or False.
-*/
-int verifWinDiag(GAME *players, int numbPlayer)
-{
-   int win = 0;
-   // Principal
-   for (int ind = 0; ind < players->quanBoards; ind++)
-   {
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].B[0].status == USED)
-         {
-            win++;
-            if (players->boards[ind].I[1].status == USED)
-            {
-               win++;
-               if (players->boards[ind].N[2].status == USED)
-               {
-                  win++;
-                  if (players->boards[ind].G[3].status == USED)
-                  {
-                     win++;
-                     if (players->boards[ind].O[4].status == USED)
-                     {
-                        win++;
-                        if (win == WIN)
-                        {
-                           winner(players, numbPlayer, ind);
-                           return 1;
-                        }
-                     }
-                     else
-                        win = 0;
-                  }
-                  else
-                     win = 0;
-               }
-               else
-                  win = 0;
-            }
-            else
-               win = 0;
-         }
-         else
-            win = 0;
-      }
-      win = 0;
-   }
-   win = 0;
-   // Secundaria.
-   for (int ind = 0; ind < players->quanBoards; ind++)
-   {
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].B[4].status == USED)
-         {
-            win++;
-            if (players->boards[ind].I[3].status == USED)
-            {
-               win++;
-               if (players->boards[ind].N[2].status == USED)
-               {
-                  win++;
-                  if (players->boards[ind].G[1].status == USED)
-                  {
-                     win++;
-                     if (players->boards[ind].O[0].status == USED)
-                     {
-                        win++;
-                        if (win == WIN)
-                        {
-                           winner(players, numbPlayer, ind);
-                           return 1;
-                        }
-                     }
-                     else
-                        win = 0;
-                  }
-                  else
-                     win = 0;
-               }
-               else
-                  win = 0;
-            }
-            else
-               win = 0;
-         }
-         else
-            win = 0;
-      }
-      win = 0;
-   }
-   return 0;
-}
-/*
-   Función:    verifWin
-   Argumentos: GAME *, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-   Objetivo:   Verificar si el jugador ganó en a carton completo.
-   Retorno:    int, True or False.
-*/
-int verifFullWin(GAME *players, int numbPlayer)
-{
-   int win = 0;
-
-   for (int ind = 0; ind < players->quanBoards; ind++)
-   {
-      for (int arg = 0; arg < MAXCOL; arg++)
-      {
-         if (players->boards[ind].B[arg].status == USED)
-         {
-            win++;
-            if (players->boards[ind].I[arg].status == USED)
-            {
-               win++;
-               if (players->boards[ind].N[arg].status == USED)
-               {
-                  win++;
-                  if (players->boards[ind].G[arg].status == USED)
-                  {
-                     win++;
-                     if (players->boards[ind].O[arg].status == USED)
-                     {
-                        win++;
-                        if (win == WIN * WIN)
-                        {
-                           winner(players, numbPlayer, ind);
-                           return 1;
-                        }
-                     }
-                     else
-                        win = 0;
-                  }
-                  else
-                     win = 0;
-               }
-               else
-                  win = 0;
-            }
-            else
-               win = 0;
-         }
-         else
-            win = 0;
-      }
-      win = 0;
-   }
-
-   return 0;
-}
-/*
-   Función:    winner
-   Argumentos: GAME *, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-               int board, carton  especifico del jugador.
-   Objetivo:   Imprimir en pantalla el jugador que ganó.
-   Retorno:    Ninguno.
-*/
-void winner(GAME *players, int numbPlayer, int board)
-{
    setColor(RED, WHITE);
-   gotoxy(XPOS, YPOS - 1);
-   printf("Ha ganado Jugador #%d en carton #%d (%d-%d).\n", numbPlayer + 1, board + 1, numbPlayer + 1, board + 1);
+   printf("%02d:%02d:%02d", hour, min, seg);
    colorDefault();
-   gotoxy(XPOS, YPOS);
-   system("pause");
-   gotoxy(XPOS, YPOS);
-   printf("                                              ");
-   gotoxy(XPOS, XPOS);
-   printf("                                              ");
-   return;
-}
-/*
-   Función:    showWinners
-   Argumentos: int winners[], Arreglos que guarda cuantas veces ha ganado un jugador.
-               int quanPlayers, cantidad de jugadores.
-   Objetivo:   Imprimir en pantalla las estadísticas de los jugadores.
-   Retorno:    Ninguno.
-*/
-void showWinners(int winners[], int quanPlayers)
-{
-   for (int pos = 0; pos < quanPlayers; pos++)
-      printf("El jugador %d, lleva %d victorias\n", pos + 1, winners[pos]);
    return;
 }
