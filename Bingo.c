@@ -74,6 +74,11 @@ int main()
    srand(time(NULL));
    _setcursortype(0);
 
+   setColor(RED, WHITE);
+   gotoxy(30, 5);
+   printf("%cBIENVENIDO AL BINGO%c\n", 173, 33);
+   colorDefault();
+
    printf("Cantidad de jugadores: ");
    scanf("%d", &quanPlayers);
    players = (GAME *)malloc(quanPlayers * sizeof(GAME));
@@ -543,7 +548,7 @@ int verifWinDiag(GAME *players, int numbPlayer)
 */
 int verifFullWin(GAME *players, int numbPlayer)
 {
-   int win = 0, arg = 0;
+   int arg = 0;
 
    for (int ind = 0; ind < players->quanBoards; ind++)
       if (players->boards[ind].B[arg].status == USED && players->boards[ind].B[arg + 1].status == USED && players->boards[ind].B[arg + 2].status == USED &&
