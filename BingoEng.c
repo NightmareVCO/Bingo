@@ -1,14 +1,14 @@
-// Librerías
+// Includes
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <conio.h>
 #include <conio.c>
 #include <time.h>
-// Mapeo de Teclas
+// Key Bindings
 #define ESC 27
 #define ENTER 13
-// Parámetros del juego
+// Game parameters
 #define INITIAL 0
 #define DIF 15
 #define DIST 3
@@ -46,7 +46,7 @@ typedef struct
    int quanBoards;
    BOARD *boards;
 } GAME;
-// Módulos int
+// int modules
 int verifNumber(GAME *, int, int);
 int randRange(int, int);
 int getBolo(int[]);
@@ -55,7 +55,7 @@ int verifWinHor(GAME *, int);
 int verifWinVer(GAME *, int);
 int verifWinDiag(GAME *, int);
 int verifFullWin(GAME *, int);
-// Módulos void
+// Void modules
 void verifPlay(GAME *, int);
 void showBoards(GAME *, int, int[]);
 void fillBoards(GAME *, int);
@@ -77,10 +77,10 @@ int main()
 
    setColor(RED, WHITE);
    gotoxy(30, 5);
-   printf("%cBIENVENIDO AL BINGO%c\n", 173, 33);
+   printf("%cWELCOME TO THE BINGO%c\n", 173, 33);
    colorDefault();
 
-   printf("Cantidad de jugadores: ");
+   printf("Amount of players: ");
    scanf("%d", &quanPlayers);
    players = (GAME *)malloc(quanPlayers * sizeof(GAME));
    int winners[quanPlayers], activePlayers[quanPlayers];
@@ -100,16 +100,16 @@ int main()
       {
          do
          {
-            printf("Cantidad de cartones jugador #%d: ", pos + 1);
+            printf("Amount of boards of player #%d: ", pos + 1);
             scanf("%d", &(players + pos)->quanBoards);
             if ((players + pos)->quanBoards > MAXBOARDS)
-               printf("El limite de cartones es 4\n");
+               printf("The max amount of boards is %d\n", MAXBOARDS);
          } while ((players + pos)->quanBoards > MAXBOARDS);
          (players + pos)->boards = (BOARD *)malloc((players + pos)->quanBoards * sizeof(BOARD));
       }
-      printf("\nControles:\n");
-      printf("\n[ENTER] para sacar un bolo.\n");
-      printf("[ESC]   para ver las victorias de los jugadores.\n\n");
+      printf("\nControls:\n");
+      printf("\n[ENTER] to throw.\n");
+      printf("[ESC]   to see the statistics.\n\n");
       system("pause");
       system("cls");
       fillBoards(players, quanPlayers);
@@ -148,32 +148,32 @@ int main()
                         winners[pos]++;
                         bingo = TRUE;
                         gotoxy(XPOS, YPOS);
-                        printf("%cDesean jugar a carton completo%c (s)%c %c (n)o", 168, 63, 161, 162);
+                        printf("Would you like to play full board mode%c (yes) or (n)o", 63);
                         do
                         {
                            fflush(stdin);
                            key = tolower(getch());
-                        } while (key != 's' && key != 'n');
+                        } while (key != 'y' && key != 'n');
                         if (key == 'n')
                         {
                            gotoxy(XPOS, YPOS);
                            printf("                                                                    ");
                            bingoFull = TRUE;
                         }
-                        if (key == 's')
+                        if (key == 'y')
                         {
                            gotoxy(XPOS, YPOS);
                            printf("                                                                    ");
                            for (int pos = 0; pos < quanPlayers; pos++)
                            {
                               gotoxy(XPOS, YPOS);
-                              printf("%cJugador #%d%c (s)%c %c (n)o", 168, pos + 1, 63, 161, 162);
+                              printf("Jugador #%d%c (y)es or (n)o", pos + 1, 63);
                               do
                               {
                                  fflush(stdin);
                                  key = tolower(getch());
-                              } while (key != 's' && key != 'n');
-                              if (key == 's')
+                              } while (key != 'y' && key != 'n');
+                              if (key == 'y')
                                  activePlayers[pos] = 1;
                               else if (key == 'n')
                                  activePlayers[pos] = 0;
@@ -195,31 +195,31 @@ int main()
          } while (!bingo);
       } while (!bingoFull);
       gotoxy(XPOS, YPOS);
-      printf("%cDesea jugar otra vez%c (s)%c %c (n)o", 168, 63, 161, 162);
+      printf("Would you like to play again%c (y)es or (n)o", 63);
       do
       {
          fflush(stdin);
          key = tolower(getch());
-      } while (key != 's' && key != 'n');
-      if (key == 's')
+      } while (key != 'y' && key != 'n');
+      if (key == 'y')
          for (int pos = 0; pos < quanPlayers; pos++)
             free((players + pos)->boards);
       system("cls");
    } while (key != 'n');
    gotoxy(30, 10);
    setColor(YELLOW, RED);
-   printf("%cGracias por jugar al bingo, vuelva pronto%c", 173, 33);
+   printf("%cThanks for playing the game%c", 173, 33);
    sleep(2);
    free(players);
    return 0;
 }
 /*
-   Función:    fillBoards
-   Argumentos: GAME *players, estructura a evaluar.
-               int quanPlayers, cantidad de jugadores.
+   Function:   fillBoards
+   Arguments:  GAME *players, struct to be evaluated.
+               int quanPlayers, quantity of players.
 
-   Objetivo:   Llenar los tableros con valores aleatorios.
-   Retorno:    Ninguno.
+   Objective:  to fill the boards with random numbers (between 1-75)
+   Return:     None.
 */
 void fillBoards(GAME *players, int quanPlayers)
 {
@@ -260,13 +260,13 @@ void fillBoards(GAME *players, int quanPlayers)
    return;
 }
 /*
-   Función:    showBoards
-   Argumentos: GAME *players, estructura a evaluar.
-               int quanPlayers, cantidad de jugadores.
-               int full[], verificador para imprimir jugadores.
+   Function:   showBoards
+   Arguments:  GAME *players, struct to be evaluated.
+               int quanPlayers, quantity of players.
+               int full[], players to be printed.
 
-   Objetivo:   Mostrar los tableros de todos los jugadores activos.
-   Retorno:    Ninguno.
+   Objective:  to show all the active player's boards.
+   Return:     None.
 */
 void showBoards(GAME *players, int quanPlayers, int activePlayers[])
 {
@@ -340,13 +340,13 @@ void showBoards(GAME *players, int quanPlayers, int activePlayers[])
    return;
 }
 /*
-   Función:    verifNumber
-   Argumentos: GAME *players, estructura a evaluar.
-               int value, valor del bolo actual.
-               int board, tablero actual a verificar.
+   Function:   verifNumber
+   Arguments:  GAME *players, struct to be evaluated.
+               int value, current value of the bolo.
+               int board, current board to be emulated.
 
-   Objetivo:   Verificar que los valores del tablero no se están repitiendo.
-   Retorno:    int True or False.
+   Objective:  to check that the value is not already used or contain in the board.
+   Return:     int True or False.
 */
 int verifNumber(GAME *players, int value, int board)
 {
@@ -366,12 +366,12 @@ int verifNumber(GAME *players, int value, int board)
    return 1;
 }
 /*
-   Función:    verifPlay
-   Argumentos: GAME *players, estructura a evaluar.
+   Function:   verifPlay
+   Arguments:  GAME *players, struct to be evaluated.
                int bolo, bolo(numero) a verificar en los arreglos.
 
-   Objetivo:   Verificar si el bolo que salio esta en algún tablero y cambiar el estatus.
-   Retorno:    Ninguno.
+   Objective:  to check if the current bolo exist on any boar, and change the status.
+   Return:     None.
 */
 void verifPlay(GAME *players, int bolo)
 {
@@ -392,12 +392,12 @@ void verifPlay(GAME *players, int bolo)
    return;
 }
 /*
-   Función:    verifWin
-   Argumentos: GAME *players, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
+   Function:   verifWin
+   Arguments:  GAME *players, struct to be evaluated.
+               int numbPlayer, specific player to be evaluated.
 
-   Objetivo:   Verificar si el jugador ganó.
-   Retorno:    int, True or False.
+   Objective:  to check if the player won.
+   Return:     int, True or False.
 */
 int verifWin(GAME *players, int numbPlayer)
 {
@@ -412,12 +412,12 @@ int verifWin(GAME *players, int numbPlayer)
    return 0;
 }
 /*
-   Función:    verifWinVer
-   Argumentos: GAME *players, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
+   Function:   verifWinVer
+   Arguments:  GAME *players, struct to be evaluated.
+               int numbPlayer, specific player to be evaluated.
 
-   Objetivo:   Verificar si el jugador ganó en vertical.
-   Retorno:    int, True or False.
+   Objective:  to check if the player won in vertical.
+   Return:    int, True or False.
 */
 int verifWinVer(GAME *players, int numbPlayer)
 {
@@ -493,12 +493,12 @@ int verifWinVer(GAME *players, int numbPlayer)
    return 0;
 }
 /*
-   Función:    verifWinHor
-   Argumentos: GAME *players, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
+   Function:   verifWinHor
+   Arguments:  GAME *players, struct to be evaluated.
+               int numbPlayer, specific player to be evaluated.
 
-   Objetivo:   Verificar si el jugador ganó en horizontal.
-   Retorno:    int, True or False.
+   Objective:  to check if the player won in horizontal
+   Return:     int, True or False.
 */
 int verifWinHor(GAME *players, int numbPlayer)
 {
@@ -513,12 +513,12 @@ int verifWinHor(GAME *players, int numbPlayer)
    return 0;
 }
 /*
-   Función:    verifWinDiag
-   Argumentos: GAME *players, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
+   Function:   verifWinDiag
+   Arguments:  GAME *players, struct to be evaluated.
+               int numbPlayer, specific player to be evaluated.
 
-   Objetivo:   Verificar si el jugador ganó en diagonal.
-   Retorno:    int, True or False.
+   Objective:  to check if the player won in diagonal
+   Return:     int, True or False.
 */
 int verifWinDiag(GAME *players, int numbPlayer)
 {
@@ -547,12 +547,12 @@ int verifWinDiag(GAME *players, int numbPlayer)
    return 0;
 }
 /*
-   Función:    verifFullWin
-   Argumentos: GAME *players, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
+   Function:   verifFullWin
+   Arguments:  GAME *players, struct to be evaluated.
+               int numbPlayer, specific player to be evaluated.
 
-   Objetivo:   Verificar si el jugador ganó en a carton completo.
-   Retorno:    int, True or False.
+   Objective:  to check if the player won in full board mode.
+   Return:     int, True or False.
 */
 int verifFullWin(GAME *players, int numbPlayer)
 {
@@ -580,19 +580,19 @@ int verifFullWin(GAME *players, int numbPlayer)
    return 0;
 }
 /*
-   Función:    winner
-   Argumentos: GAME *players, estructura a evaluar.
-               int numbPlayer, jugador especifico a evaluar.
-               int board, carton  especifico del jugador.
+   Function:   winner
+   Arguments:  GAME *players, struct to be evaluated.
+               int numbPlayer, specific player to be evaluated.
+               int board, current board to be emulated.
 
-   Objetivo:   Imprimir en pantalla el jugador que ganó.
-   Retorno:    Ninguno.
+   Objective:  to print the player who won the game.
+   Return:     None.
 */
 void winner(GAME *players, int numbPlayer, int board)
 {
    setColor(RED, WHITE);
    gotoxy(XPOS, YPOS - 1);
-   printf("Ha ganado Jugador #%d en carton #%d (%d-%d).\n", numbPlayer + 1, board + 1, numbPlayer + 1, board + 1);
+   printf("The player #%d won in board #%d (%d-%d).\n", numbPlayer + 1, board + 1, numbPlayer + 1, board + 1);
    colorDefault();
    gotoxy(XPOS, YPOS);
    system("pause");
@@ -603,36 +603,36 @@ void winner(GAME *players, int numbPlayer, int board)
    return;
 }
 /*
-   Función:    showWinners
-   Argumentos: int winners[], Arreglos que guarda cuantas veces ha ganado un jugador.
-               int quanPlayers, cantidad de jugadores.
+   Function:   showWinners
+   Arguments:  int winners[], Arreglos que guarda cuantas veces ha ganado un jugador.
+               int quanPlayers, quantity of players.
 
-   Objetivo:   Imprimir en pantalla las estadísticas de los jugadores.
-   Retorno:    Ninguno.
+   Objective:  Imprimir en pantalla las estadísticas de los jugadores.
+   Return:     None.
 */
 void showWinners(int winners[], int quanPlayers)
 {
    for (int pos = 0; pos < quanPlayers; pos++)
-      printf("El jugador #%d, lleva #%d victoria(s)\n", pos + 1, winners[pos]);
+      printf("The player #%d, has #%d victories\n", pos + 1, winners[pos]);
    return;
 }
 /*
-   Función:    randRange
-   Argumentos: int minLimit, primer valor (rango inferior).
-               int maxLimit, segundo valor (rango superior).
+   Function:   randRange
+   Arguments:  int minLimit, inferior limit.
+               int maxLimit, superior limit.
 
-   Objetivo:   Crear un número aleatorio con la formula.
-   Retorno:    int, un número aleatorio
+   Objective:  to get a random number.
+   Return:     int, a random number.
 */
 int randRange(int minLimit, int maxLimit)
 {
    return rand() % (maxLimit - minLimit + 1) + minLimit;
 }
 /*
-   Función:    showBolo
-   Argumentos: int bolo, el numero a imprimir.
-   Objetivo:   Presentar los bolos con su letra significativa.
-   Retorno:    Ninguno.
+   Function:   showBolo
+   Arguments:  int bolo, the number to be printed.
+   Objective:  to show the number with it's representative letter.
+   Return:     None.
 */
 void showBolo(int bolo)
 {
@@ -651,19 +651,19 @@ void showBolo(int bolo)
    return;
 }
 /*
-   Función:    getBolo
-   Argumentos: int usadas[], bolos ya usados.
-   Objetivo:   Lanzar un bolo sin repetición.
-   Retorno:    int, 'pos' que es el bolo(numero) en cuestión.
+   Function:   getBolo
+   Arguments:  int used[], string with used numbers (bolos).
+   Objective:  to throw a random number with no repetition.
+   Return:     int pos, the number of the bolo.
 */
-int getBolo(int usadas[])
+int getBolo(int used[])
 {
    int pos;
    do
    {
       pos = randRange(1, MAXBOLO);
-      if (usadas[pos] == FREE)
-         usadas[pos] = USED;
+      if (used[pos] == FREE)
+         used[pos] = USED;
       else
          pos = 0;
    } while (!pos);
@@ -671,11 +671,12 @@ int getBolo(int usadas[])
    return pos;
 }
 /*
-   Función:    setColor
-   Argumentos: int text, color del texto.
-               int background, color del fondo
-   Objetivo:   Establecer los colores elegidos en 'TC' y 'BC'.
-   Retorno:    Ninguno.
+   Function:   setColor
+   Arguments:  int TC, text's color.
+               int BC, background's color.
+
+   Objective:  to set text color 'TC' and background 'BC'.
+   Return:     None.
 */
 void setColor(int text, int background)
 {
@@ -684,10 +685,10 @@ void setColor(int text, int background)
    return;
 }
 /*
-   Función:    colorDefault
-   Argumentos: Ninguno.
-   Objetivo:   Establecer los colores de fabrica.
-   Retorno:    Ninguno.
+   Function:   defaultColor
+   Arguments:  None.
+   Objective:  to set default colors.
+   Return:     None.
 */
 void colorDefault()
 {
@@ -696,12 +697,13 @@ void colorDefault()
    return;
 }
 /*
-   Función:    showTimeXY
-   Argumentos: int seg, segundos a evaluar.
-               int posX, la posición horizontal del plano.
-               int posY, la posición vertical del plano.
-   Objetivo:   Explicarle al jugador como jugar.
-   Retorno:    Ninguno.
+   Function:   showTimeXY
+   Arguments:  int seg, seconds to be evaluated.
+               int posX, horizontal plane's position.
+               int posY, vertical plane's position.
+
+   Objective:  to get and show the current time lapsed.
+   Return:     None.
 */
 void showTimeXY(int seg, int posX, int posY)
 {
