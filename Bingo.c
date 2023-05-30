@@ -184,7 +184,7 @@ int main()
                   }
                   else if (bingo)
                   {
-                     if (verifFullWin((players + pos), pos))
+                     if (verifFullWin((players + pos), pos) && activePlayers[pos] == 1)
                      {
                         bingoFull = TRUE;
                         winners[pos]++;
