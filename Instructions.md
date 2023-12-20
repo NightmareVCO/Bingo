@@ -1,6 +1,6 @@
 ## English
 
-In order to play the game and joy the experience, you must put (or have) "conio.c" in your "include" repertory (for example: C:\MinGW\include)
+In order to play the game and joy the experience, you must place (or have) "conio.c" in your "include" repertory (for example: C:\MinGW\include)
 
 The game was made meant to be played by any amount of players, you can play with friends but not CPU.
 
